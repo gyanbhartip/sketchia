@@ -1,30 +1,44 @@
 {
-  "compilerOptions": {
-    "rootDir": ".",
-    "paths": {
-      "sketchia": ["./src/index"]
-    },
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "jsx": "react-jsx",
-    "lib": ["ESNext"],
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "noEmit": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noImplicitUseStrict": false,
-    "noStrictGenericChecks": false,
-    "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "resolveJsonModule": true,
-    "resolvePackageJsonImports": false,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "ESNext",
-    "verbatimModuleSyntax": true
-  }
+	"compilerOptions": {
+		"rootDir": ".",
+		"paths": {
+			"sketchia": ["./src/index"],
+			"_assets": ["./src/assets"],
+			"_components": ["./src/components"],
+			"_hooks": ["./src/hooks"],
+			"_styles": ["./src/styles"],
+			"_types": ["./src/types"],
+			"_utils": ["./src/utils"]
+		},
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"jsx": "react-jsx",
+		"lib": ["ESNext"],
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"noEmit": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitReturns": true,
+		"noImplicitUseStrict": false,
+		"noStrictGenericChecks": false,
+		"noUncheckedIndexedAccess": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"resolveJsonModule": true,
+		"resolvePackageJsonImports": false,
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "ESNext",
+		"verbatimModuleSyntax": true
+	},
+	"include": [
+		// include all ts and tsx files in src and example
+		"src/**/*.ts",
+		"src/**/*.tsx",
+		"example/**/*.ts",
+		"example/**/*.tsx"
+	],
+	"exclude": ["*.js", "*.jsx", "*.cjs"] // exclude javascript files
 }
