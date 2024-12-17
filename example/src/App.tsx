@@ -1,20 +1,24 @@
-import { Text, View, StyleSheet } from 'react-native';
-import { multiply } from 'sketchia';
+import { useImage } from '@shopify/react-native-skia';
+import { SafeAreaView, StatusBar } from 'react-native';
+import { SketchiaCanvas } from 'sketchia';
+import { globalStyles } from '../../src/styles/GlobalStyles';
+import Permissions from './components/Permissions';
 
-const result = multiply(3, 7);
+const App = () => {
+	const backgroundImage = useImage('https://picsum.photos/1000?blur=2');
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Result: {result}</Text>
-    </View>
-  );
-}
+	return (
+		<SafeAreaView style={globalStyles.flex}>
+			<Permissions />
+			<StatusBar animated={true} barStyle={'dark-content'} />
+			<SketchiaCanvas
+				backgroundImage={backgroundImage}
+				mode="highlighter"
+				strokeWeight={6}
+				toolColor="#F0E0B0"
+			/>
+		</SafeAreaView>
+	);
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
