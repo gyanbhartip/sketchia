@@ -1879,12 +1879,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@evilmartians/lefthook@npm:^1.9.2":
-  version: 1.9.2
-  resolution: "@evilmartians/lefthook@npm:1.9.2"
+"@evilmartians/lefthook@npm:^1.9.3":
+  version: 1.9.3
+  resolution: "@evilmartians/lefthook@npm:1.9.3"
   bin:
     lefthook: bin/index.js
-  checksum: 10c0/72aa8a816aaacca1e7b07ad625862c940a7740466a2e1801f7c786ee3745baf3e020b5a31e9359b2c94902e9f1f7fb9b87ea8e43847c7dce09732f748b85eb79
+  checksum: 10c0/35c09d461153ba310626582378cf25afc94c1d6cb2baed31c37a2cdffa326ff60d14b2202017ad9d79d3caa6f3b5630bbeb0cbf7821c226c0da5d2a9b674dd5f
   conditions: (os=darwin | os=linux | os=win32) & (cpu=x64 | cpu=arm64 | cpu=ia32)
   languageName: node
   linkType: hard
@@ -11651,7 +11651,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-reanimated@npm:^3.16.5, react-native-reanimated@npm:~3.16.1":
+"react-native-reanimated@npm:^3.16.5, react-native-reanimated@npm:~3.16.5":
   version: 3.16.5
   resolution: "react-native-reanimated@npm:3.16.5"
   dependencies:
@@ -12671,7 +12671,7 @@ __metadata:
     react-dom: "npm:18.3.1"
     react-native: "npm:0.76.5"
     react-native-builder-bob: "npm:^0.35.2"
-    react-native-reanimated: "npm:~3.16.1"
+    react-native-reanimated: "npm:~3.16.5"
     react-native-web: "npm:~0.19.13"
   languageName: unknown
   linkType: soft
@@ -12681,7 +12681,7 @@ __metadata:
   resolution: "sketchia@workspace:."
   dependencies:
     "@commitlint/config-conventional": "npm:^19.6.0"
-    "@evilmartians/lefthook": "npm:^1.9.2"
+    "@evilmartians/lefthook": "npm:^1.9.3"
     "@react-native/eslint-config": "npm:^0.76.5"
     "@release-it/conventional-changelog": "npm:^9.0.3"
     "@shopify/react-native-skia": "npm:^1.7.5"

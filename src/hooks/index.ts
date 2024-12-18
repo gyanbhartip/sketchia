@@ -25,7 +25,7 @@ import {
 	useRef,
 } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
-import { ImageFormatMimeTypeMap, createThrottle } from '../utils';
+import { ImageFormatMimeTypeMap, createThrottle, simplifyPath } from '../utils';
 
 /**
  * Custom hook to force a component re-render
@@ -96,6 +96,28 @@ export const useCanvasControls = (
 	};
 };
 
+export const useHandlers = (canvasRef: React.RefObject<CanvasControls>) => {
+	const handleSave = useCallback(
+		(saveConfig?: ImageSnapshotConfig) => {
+			return canvasRef.current?.makeImageSnapshot(saveConfig);
+		},
+		[canvasRef],
+	);
+
+	const handleClear = useCallback(() => {
+		canvasRef.current?.clear();
+	}, [canvasRef]);
+
+	const handleUndo = useCallback(() => {
+		canvasRef.current?.undo();
+	}, [canvasRef]);
+
+	return useMemo(
+		() => ({ handleSave, handleClear, handleUndo }),
+		[handleSave, handleClear, handleUndo],
+	);
+};
+
 /**
  * Hook to handle pan gestures for drawing on canvas
  * Supports both signature and highlighter modes
@@ -105,13 +127,13 @@ export const usePanGesture = ({
 	pathStack,
 	strokeWeight,
 	toolColor,
-	mode = 'signature',
+	mode = 'cubic',
 }: {
 	currentPath: MutableRefObject<PathData | null>;
 	pathStack: MutableRefObject<Array<PathData>>;
 	strokeWeight: number;
 	toolColor: Color;
-	mode?: 'signature' | 'highlighter';
+	mode?: 'cubic' | 'quadratic';
 }) => {
 	// Refs to track animation frame, points and last drawn point
 	const frameId = useRef<number>();
@@ -141,7 +163,7 @@ export const usePanGesture = ({
 	/**
 	 * Creates a smooth signature path using Catmull-Rom spline interpolation
 	 */
-	const createSignaturePath = useCallback(
+	const generateCubicBezierPath = useCallback(
 		(pathPoints: Array<Point>): SkPath => {
 			const path = Skia.Path.Make();
 			if (pathPoints.length < 2) {
@@ -219,7 +241,7 @@ export const usePanGesture = ({
 	 * Creates a highlighter path using quadratic Bézier curves
 	 * for a more natural highlighting effect with light smoothing
 	 */
-	const createHighlighterPath = useCallback(
+	const generateQuadraticBezierPath = useCallback(
 		(pathPoints: Array<Point>): SkPath => {
 			const path = Skia.Path.Make();
 			if (pathPoints.length < 2) {
@@ -282,27 +304,17 @@ export const usePanGesture = ({
 					}
 
 					const newPoint = { x, y };
-					const lastPt = lastPoint.current;
-
-					// Skip points that are too close together
-					if (lastPt) {
-						const dist = Math.sqrt(
-							(newPoint.x - lastPt.x) ** 2 +
-								(newPoint.y - lastPt.y) ** 2,
-						);
-						if (dist < 1) {
-							return;
-						}
-					}
 
 					points.current.push(newPoint);
-					lastPoint.current = newPoint;
+
+					// Only update path with simplified points during drawing
+					const simplifiedPoints = simplifyPath(points.current);
 
 					// Update path based on selected mode
 					currentPath.current.path =
-						mode === 'signature'
-							? createSignaturePath(points.current)
-							: createHighlighterPath(points.current);
+						mode === 'cubic'
+							? generateCubicBezierPath(simplifiedPoints)
+							: generateQuadraticBezierPath(simplifiedPoints);
 
 					throttledRerender.throttledFunc();
 				})
@@ -311,11 +323,14 @@ export const usePanGesture = ({
 						return;
 					}
 
+					// Use full point set for final path, but still apply simplification
+					const finalPoints = simplifyPath(points.current, 1); // Lower tolerance for final path
+
 					// Finalize path and add to stack
 					const finalPath =
-						mode === 'signature'
-							? createSignaturePath(points.current)
-							: createHighlighterPath(points.current);
+						mode === 'cubic'
+							? generateCubicBezierPath(finalPoints)
+							: generateQuadraticBezierPath(finalPoints);
 
 					pathStack.current = [
 						...pathStack.current,
@@ -339,8 +354,8 @@ export const usePanGesture = ({
 			strokeWeight,
 			rerender,
 			mode,
-			createSignaturePath,
-			createHighlighterPath,
+			generateCubicBezierPath,
+			generateQuadraticBezierPath,
 			throttledRerender,
 			pathStack,
 		],

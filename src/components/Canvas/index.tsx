@@ -27,7 +27,7 @@ type CanvasComponentProps = {
 	 * Mode of the canvas
 	 * @default 'highlighter'
 	 */
-	mode?: 'highlighter' | 'signature';
+	mode?: 'cubic' | 'quadratic';
 	/**
 	 * Weight of the stroke
 	 * @default 8
@@ -45,7 +45,7 @@ const CanvasComponent = forwardRef<CanvasControls, CanvasComponentProps>(
 		{
 			backgroundImage,
 			canvasColor = '#1B1B1B',
-			mode = 'highlighter',
+			mode = 'cubic',
 			strokeWeight = 8,
 			toolColor = '#F8F8FF',
 		},

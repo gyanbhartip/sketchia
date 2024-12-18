@@ -15,7 +15,10 @@
 		"ios": {
 			"supportsTablet": true,
 			"bundleIdentifier": "sketchia.example",
-			"infoPlist": {}
+			"infoPlist": {
+				"NSPhotoLibraryUsageDescription": "This app requires access to the photo library to save and access images",
+				"NSPhotoLibraryAddUsageDescription": "This app requires access to the photo library to save images"
+			}
 		},
 		"android": {
 			"adaptiveIcon": {

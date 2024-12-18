@@ -1,4 +1,4 @@
-import { REQUIRED_PERMISSIONS } from '_utils';
+import { REQUIRED_PERMISSIONS } from 'sketchia';
 import { useCallback, useEffect } from 'react';
 import { PermissionsAndroid, Platform } from 'react-native';
 
