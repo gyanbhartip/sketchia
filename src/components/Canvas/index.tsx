@@ -6,15 +6,19 @@ import {
 	type SkImage,
 	useCanvasRef,
 } from '@shopify/react-native-skia';
-import { useCanvasControls, usePanGesture } from '../../hooks';
-import { globalStyles } from '../../styles/GlobalStyles';
-import type { CanvasControls, PathData } from '../../types';
-import { forwardRef, useMemo, useRef } from 'react';
-import { useWindowDimensions, type ColorValue } from 'react-native';
+import { forwardRef, useCallback, useRef, useState } from 'react';
+import type {
+	ColorValue,
+	LayoutChangeEvent,
+	LayoutRectangle,
+} from 'react-native';
 import {
 	GestureDetector,
 	GestureHandlerRootView,
 } from 'react-native-gesture-handler';
+import { useCanvasControls, usePanGesture } from '../../hooks';
+import { globalStyles } from '../../styles';
+import type { CanvasControls, PathData } from '../../types';
 
 type CanvasComponentProps = {
 	backgroundImage?: SkImage | null;
@@ -29,6 +33,14 @@ type CanvasComponentProps = {
 	 */
 	mode?: 'cubic' | 'quadratic';
 	/**
+	 * Handler function to be called when the stroke starts
+	 */
+	onStrokeStart?: () => void;
+	/**
+	 * Handler function to be called when the stroke ends
+	 */
+	onStrokeEnd?: () => void;
+	/**
 	 * Weight of the stroke
 	 * @default 8
 	 */
@@ -38,67 +50,73 @@ type CanvasComponentProps = {
 	 * @default #F8F8FF
 	 */
 	toolColor?: Color;
+	/**
+	 * Whether the canvas should enabled for drawing
+	 * @default true
+	 */
+	touchEnabled?: boolean;
 };
 
 const CanvasComponent = forwardRef<CanvasControls, CanvasComponentProps>(
 	(
 		{
-			backgroundImage,
+			backgroundImage = null,
 			canvasColor = '#1B1B1B',
 			mode = 'cubic',
+			onStrokeEnd,
+			onStrokeStart,
 			strokeWeight = 8,
 			toolColor = '#F8F8FF',
+			touchEnabled,
 		},
 		ref,
 	) => {
-		const windowDimensions = useWindowDimensions();
-
 		const canvasRef = useCanvasRef();
 		const pathStack = useRef<Array<PathData>>([]);
 		const currentPath = useRef<PathData | null>(null);
 
-		useCanvasControls(canvasRef, pathStack, ref);
+		useCanvasControls(canvasRef, pathStack, ref, backgroundImage);
 
 		const panGesture = usePanGesture({
 			currentPath,
+			mode,
+			onStrokeEnd,
+			onStrokeStart,
 			pathStack,
 			strokeWeight,
 			toolColor,
-			mode,
+			touchEnabled,
 		});
 
-		const backgroundImageHeight = useMemo(
-			() => backgroundImage?.height() ?? 0,
-			[backgroundImage],
-		);
+		const [canvasSize, setCanvasSize] = useState<LayoutRectangle>({
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		});
 
-		const backgroundImageWidth = useMemo(
-			() => backgroundImage?.width() ?? 0,
-			[backgroundImage],
-		);
+		const updateCanvasSize = useCallback((event: LayoutChangeEvent) => {
+			setCanvasSize(event.nativeEvent.layout);
+		}, []);
 
 		return (
-			<GestureHandlerRootView style={globalStyles.flex}>
+			<GestureHandlerRootView
+				onLayout={updateCanvasSize}
+				style={globalStyles.flex}>
 				<GestureDetector gesture={panGesture}>
 					<Canvas
 						ref={canvasRef}
-						style={[
-							// If the background image is provided, set the canvas size to the background image size in order to avoid layout issues
-							backgroundImageHeight > 0 &&
-							backgroundImageWidth > 0
-								? {
-										width: backgroundImageWidth,
-										height: backgroundImageHeight,
-									}
-								: globalStyles.flex,
-							{ backgroundColor: canvasColor },
-						]}>
+						style={{
+							backgroundColor: canvasColor,
+							height: canvasSize.height,
+							width: canvasSize.width,
+						}}>
 						{backgroundImage ? (
 							<Image
 								fit={'contain'}
-								height={windowDimensions.height}
+								height={canvasSize.height}
 								image={backgroundImage}
-								width={windowDimensions.width}
+								width={canvasSize.width}
 								x={0}
 								y={0}
 							/>

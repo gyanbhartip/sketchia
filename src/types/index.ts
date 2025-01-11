@@ -51,9 +51,10 @@ export type ImageSnapshotConfig = {
 };
 
 export type CanvasControls = {
-	undo: () => void;
 	clear: () => void;
+	isEmpty: () => boolean;
 	makeImageSnapshot: (
 		config?: ImageSnapshotConfig,
 	) => SkiaDrawSnapshot | undefined;
+	undo: () => void;
 };

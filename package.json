@@ -69,12 +69,12 @@
 	},
 	"devDependencies": {
 		"@commitlint/config-conventional": "^19.6.0",
-		"@evilmartians/lefthook": "^1.9.3",
-		"@react-native/eslint-config": "^0.76.5",
-		"@release-it/conventional-changelog": "^9.0.3",
+		"@evilmartians/lefthook": "^1.10.3",
+		"@react-native/eslint-config": "^0.76.6",
+		"@release-it/conventional-changelog": "^10.0.0",
+		"@shopify/react-native-skia": "^1.9.0",
 		"@types/jest": "^29.5.14",
-		"@types/react": "^18.3.17",
-		"babel-plugin-module-resolver": "^5.0.2",
+		"@types/react": "^18.3.18",
 		"commitlint": "^19.6.1",
 		"del-cli": "^6.0.0",
 		"eslint": "^8.57.1",
@@ -84,17 +84,19 @@
 		"jest": "^29.7.0",
 		"prettier": "^3.4.2",
 		"react": "18.3.1",
-		"react-native": "0.76.5",
+		"react-native": "0.76.6",
 		"react-native-builder-bob": "^0.35.2",
-		"release-it": "^17.10.0",
-		"typescript": "^5.7.2"
-	},
-	"resolutions": {
-		"@types/react": "^18.2.44"
+		"react-native-gesture-handler": "^2.22.0",
+		"react-native-reanimated": "^3.16.6",
+		"release-it": "^18.1.1",
+		"typescript": "^5.7.3"
 	},
 	"peerDependencies": {
+		"@shopify/react-native-skia": "^1.9.0",
 		"react": "*",
-		"react-native": "*"
+		"react-native": "*",
+		"react-native-gesture-handler": "^2.22.0",
+		"react-native-reanimated": "^3.16.6"
 	},
 	"workspaces": [
 		"example"
@@ -171,10 +173,5 @@
 		"languages": "js",
 		"type": "library",
 		"version": "0.45.5"
-	},
-	"dependencies": {
-		"@shopify/react-native-skia": "^1.7.5",
-		"react-native-gesture-handler": "^2.21.2",
-		"react-native-reanimated": "^3.16.5"
 	}
 }

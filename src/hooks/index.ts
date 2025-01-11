@@ -1,18 +1,11 @@
-// Import required types and utilities from Skia
 import type { SkPath } from '@shopify/react-native-skia';
 import {
 	type Color,
 	ImageFormat,
+	type SkImage,
 	Skia,
 	type SkiaDomView,
 } from '@shopify/react-native-skia';
-import type {
-	CanvasControls,
-	ImageSnapshotConfig,
-	PathData,
-	Point,
-	SkiaDrawSnapshot,
-} from '_types';
 import {
 	type ForwardedRef,
 	type MutableRefObject,
@@ -25,6 +18,13 @@ import {
 	useRef,
 } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
+import type {
+	CanvasControls,
+	ImageSnapshotConfig,
+	PathData,
+	Point,
+	SkiaDrawSnapshot,
+} from '../types';
 import { ImageFormatMimeTypeMap, createThrottle, simplifyPath } from '../utils';
 
 /**
@@ -45,24 +45,26 @@ export const useCanvasControls = (
 	canvasRef: RefObject<SkiaDomView>,
 	pathStack: MutableRefObject<Array<PathData>>,
 	ref: ForwardedRef<CanvasControls>,
+	backgroundImage: SkImage | null,
 ) => {
 	const rerender = useRerender();
-	useImperativeHandle(ref, () => ({
-		undo,
-		clear,
-		makeImageSnapshot,
-	}));
 
-	// Remove the last drawn path
-	const undo = () => {
-		pathStack.current.pop();
-		rerender();
-	};
+	useImperativeHandle(ref, () => ({
+		clear,
+		isEmpty,
+		makeImageSnapshot,
+		undo,
+	}));
 
 	// Clear all paths from canvas
 	const clear = () => {
 		pathStack.current = [];
 		rerender();
+	};
+
+	// Check if canvas is empty
+	const isEmpty = () => {
+		return pathStack.current.length === 0 && backgroundImage === null;
 	};
 
 	/**
@@ -94,6 +96,12 @@ export const useCanvasControls = (
 			width,
 		};
 	};
+
+	// Remove the last drawn path
+	const undo = () => {
+		pathStack.current.pop();
+		rerender();
+	};
 };
 
 export const useHandlers = (canvasRef: React.RefObject<CanvasControls>) => {
@@ -124,16 +132,22 @@ export const useHandlers = (canvasRef: React.RefObject<CanvasControls>) => {
  */
 export const usePanGesture = ({
 	currentPath,
+	mode = 'cubic',
+	onStrokeEnd,
+	onStrokeStart,
 	pathStack,
 	strokeWeight,
 	toolColor,
-	mode = 'cubic',
+	touchEnabled = true,
 }: {
 	currentPath: MutableRefObject<PathData | null>;
+	mode?: 'cubic' | 'quadratic';
+	onStrokeEnd?: () => void;
+	onStrokeStart?: () => void;
 	pathStack: MutableRefObject<Array<PathData>>;
 	strokeWeight: number;
 	toolColor: Color;
-	mode?: 'cubic' | 'quadratic';
+	touchEnabled?: boolean;
 }) => {
 	// Refs to track animation frame, points and last drawn point
 	const frameId = useRef<number>();
@@ -170,11 +184,15 @@ export const usePanGesture = ({
 				return path;
 			}
 
-			pathPoints[0] && path.moveTo(pathPoints[0].x, pathPoints[0].y);
+			if (pathPoints[0]) {
+				path.moveTo(pathPoints[0].x, pathPoints[0].y);
+			}
 
 			if (pathPoints.length === 2) {
 				// For just two points, draw a simple line
-				pathPoints[1] && path.lineTo(pathPoints[1].x, pathPoints[1].y);
+				if (pathPoints[1]) {
+					path.lineTo(pathPoints[1].x, pathPoints[1].y);
+				}
 			} else {
 				// Use Catmull-Rom spline with enhanced control points
 				for (let i = 0; i < pathPoints.length - 1; i++) {
@@ -248,7 +266,9 @@ export const usePanGesture = ({
 				return path;
 			}
 
-			pathPoints[0] && path.moveTo(pathPoints[0].x, pathPoints[0].y);
+			if (pathPoints[0]) {
+				path.moveTo(pathPoints[0].x, pathPoints[0].y);
+			}
 
 			// Use quadratic curves with slightly offset control points for smoother curves
 			for (let i = 1; i < pathPoints.length; i++) {
@@ -283,6 +303,7 @@ export const usePanGesture = ({
 			Gesture.Pan()
 				.runOnJS(true)
 				.minDistance(1)
+				.enabled(touchEnabled)
 				.onStart(({ x, y }) => {
 					// Initialize new path on gesture start
 					const point = { x, y };
@@ -296,6 +317,9 @@ export const usePanGesture = ({
 						color: toolColor,
 						strokeWidth: strokeWeight,
 					};
+
+					onStrokeStart?.();
+
 					requestAnimationFrame(rerender);
 				})
 				.onChange(({ x, y }) => {
@@ -346,18 +370,23 @@ export const usePanGesture = ({
 					points.current = [];
 					lastPoint.current = null;
 
+					onStrokeEnd?.();
+
 					requestAnimationFrame(rerender);
 				}),
 		[
+			touchEnabled,
 			currentPath,
 			toolColor,
 			strokeWeight,
+			onStrokeStart,
 			rerender,
 			mode,
 			generateCubicBezierPath,
 			generateQuadraticBezierPath,
 			throttledRerender,
 			pathStack,
+			onStrokeEnd,
 		],
 	);
 };

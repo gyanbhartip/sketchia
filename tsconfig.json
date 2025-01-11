@@ -2,13 +2,7 @@
 	"compilerOptions": {
 		"rootDir": ".",
 		"paths": {
-			"sketchia": ["./src/index"],
-			"_assets": ["./src/assets"],
-			"_components": ["./src/components"],
-			"_hooks": ["./src/hooks"],
-			"_styles": ["./src/styles"],
-			"_types": ["./src/types"],
-			"_utils": ["./src/utils"]
+			"sketchia": ["./src/index"]
 		},
 		"allowUnreachableCode": false,
 		"allowUnusedLabels": false,

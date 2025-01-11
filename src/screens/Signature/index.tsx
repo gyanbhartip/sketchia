@@ -1,11 +1,11 @@
 import { Canvas } from '@shopify/react-native-skia';
-import type { CanvasControls } from '_types';
 import { useCallback, useRef } from 'react';
 import { Pressable, SafeAreaView, StyleSheet, View } from 'react-native';
 import { ClearIcon, SaveIcon, UndoIcon } from '../../assets/Icons';
 import CanvasComponent from '../../components/Canvas';
 import { useHandlers } from '../../hooks';
 import { globalStyles } from '../../styles/GlobalStyles';
+import type { CanvasControls } from '../../types';
 
 const SignatureScreen = ({
 	canvasColor = '#1B1B1B',

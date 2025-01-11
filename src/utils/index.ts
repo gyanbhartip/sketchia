@@ -1,6 +1,6 @@
 import { ImageFormat } from '@shopify/react-native-skia';
-import type { Point } from '_types';
 import type { Permission } from 'react-native';
+import type { Point } from '../types';
 
 export const ImageFormatMimeTypeMap: Record<ImageFormat, string> = {
 	[ImageFormat.JPEG]: 'image/jpeg',
