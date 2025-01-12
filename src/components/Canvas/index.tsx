@@ -29,7 +29,7 @@ type CanvasComponentProps = {
 	canvasColor?: ColorValue;
 	/**
 	 * Mode of the canvas
-	 * @default 'highlighter'
+	 * @default 'cubic'
 	 */
 	mode?: 'cubic' | 'quadratic';
 	/**

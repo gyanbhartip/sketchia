@@ -107,6 +107,26 @@ To publish new versions, run the following:
 yarn release
 ```
 
+To release with a specific tag:
+
+```sh
+yarn release --npm.tag=<tagName>
+```
+
+To deviate from the default version bumping by release-it, use the `--increment` option:
+
+```sh
+yarn release --increment <patch | minor | major>
+```
+
+To publish the latest <alpha | beta | rc> of the new <major | minor | patch> version:
+
+```sh
+yarn release <major | minor | patch> --preRelease=<alpha | beta | rc>
+```
+
+(refer [release-it pre-release docs](https://github.com/release-it/release-it/blob/main/docs/pre-releases.md))
+
 ### Scripts
 
 The `package.json` file contains various scripts for common tasks:
