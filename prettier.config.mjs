@@ -6,7 +6,7 @@ const config = {
 	arrowParens: 'avoid',
 	bracketSameLine: true,
 	bracketSpacing: true,
-	endOfLine: 'auto',
+	endOfLine: 'lf',
 	singleQuote: true,
 	trailingComma: 'all',
 	tabWidth: 4,

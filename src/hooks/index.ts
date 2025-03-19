@@ -4,12 +4,11 @@ import {
 	ImageFormat,
 	type SkImage,
 	Skia,
-	type SkiaDomView,
+	type useCanvasRef,
 } from '@shopify/react-native-skia';
 import {
 	type ForwardedRef,
 	type MutableRefObject,
-	type RefObject,
 	useCallback,
 	useEffect,
 	useImperativeHandle,
@@ -42,7 +41,7 @@ export const useRerender = () => {
  * Hook to provide canvas control methods like undo, clear and taking snapshots
  */
 export const useCanvasControls = (
-	canvasRef: RefObject<SkiaDomView>,
+	canvasRef: ReturnType<typeof useCanvasRef>,
 	pathStack: MutableRefObject<Array<PathData>>,
 	ref: ForwardedRef<CanvasControls>,
 	backgroundImage: SkImage | null,
@@ -130,7 +129,7 @@ export const useHandlers = (canvasRef: React.RefObject<CanvasControls>) => {
  * Hook to handle pan gestures for drawing on canvas
  * Supports both signature and highlighter modes
  */
-export const usePanGesture = ({
+export const useGesture = ({
 	currentPath,
 	mode = 'cubic',
 	onStrokeEnd,
@@ -297,96 +296,101 @@ export const usePanGesture = ({
 		[],
 	);
 
-	// Configure and return the pan gesture handler
+	const tapGesture = Gesture.Tap()
+		.runOnJS(true)
+		.enabled(touchEnabled)
+		.onStart(() => {
+			onStrokeStart?.();
+		})
+		.onEnd(({ x, y }) => {
+			const path = Skia.Path.Make();
+			path.moveTo(x, y);
+			path.addCircle(x, y, strokeWeight / 2);
+			pathStack.current = [
+				...pathStack.current,
+				{ path, color: toolColor, strokeWidth: strokeWeight },
+			];
+			onStrokeEnd?.();
+			requestAnimationFrame(rerender);
+		});
+
+	const panGesture = Gesture.Pan()
+		.runOnJS(true)
+		.minDistance(1)
+		.enabled(touchEnabled)
+		.onStart(({ x, y }) => {
+			// Initialize new path on gesture start
+			const point = { x, y };
+			points.current = [point];
+			lastPoint.current = point;
+
+			const newPath = Skia.Path.Make();
+			newPath.moveTo(x, y);
+			currentPath.current = {
+				path: newPath,
+				color: toolColor,
+				strokeWidth: strokeWeight,
+			};
+
+			onStrokeStart?.();
+
+			requestAnimationFrame(rerender);
+		})
+		.onChange(({ x, y }) => {
+			if (!currentPath.current) {
+				return;
+			}
+
+			const newPoint = { x, y };
+
+			points.current.push(newPoint);
+
+			// Only update path with simplified points during drawing
+			const simplifiedPoints = simplifyPath(points.current);
+
+			// Update path based on selected mode
+			currentPath.current.path =
+				mode === 'cubic'
+					? generateCubicBezierPath(simplifiedPoints)
+					: generateQuadraticBezierPath(simplifiedPoints);
+
+			throttledRerender.throttledFunc();
+		})
+		.onEnd(() => {
+			if (!currentPath.current) {
+				return;
+			}
+
+			// Use full point set for final path, but still apply simplification
+			const finalPoints = simplifyPath(points.current, 1); // Lower tolerance for final path
+
+			// Finalize path and add to stack
+			const finalPath =
+				mode === 'cubic'
+					? generateCubicBezierPath(finalPoints)
+					: generateQuadraticBezierPath(finalPoints);
+
+			pathStack.current = [
+				...pathStack.current,
+				{
+					path: finalPath,
+					color: currentPath.current.color,
+					strokeWidth: currentPath.current.strokeWidth,
+				},
+			];
+
+			// Reset current path state
+			currentPath.current = null;
+			points.current = [];
+			lastPoint.current = null;
+
+			onStrokeEnd?.();
+
+			requestAnimationFrame(rerender);
+		});
+
 	return useMemo(
-		() =>
-			Gesture.Pan()
-				.runOnJS(true)
-				.minDistance(1)
-				.enabled(touchEnabled)
-				.onStart(({ x, y }) => {
-					// Initialize new path on gesture start
-					const point = { x, y };
-					points.current = [point];
-					lastPoint.current = point;
-
-					const newPath = Skia.Path.Make();
-					newPath.moveTo(x, y);
-					currentPath.current = {
-						path: newPath,
-						color: toolColor,
-						strokeWidth: strokeWeight,
-					};
-
-					onStrokeStart?.();
-
-					requestAnimationFrame(rerender);
-				})
-				.onChange(({ x, y }) => {
-					if (!currentPath.current) {
-						return;
-					}
-
-					const newPoint = { x, y };
-
-					points.current.push(newPoint);
-
-					// Only update path with simplified points during drawing
-					const simplifiedPoints = simplifyPath(points.current);
-
-					// Update path based on selected mode
-					currentPath.current.path =
-						mode === 'cubic'
-							? generateCubicBezierPath(simplifiedPoints)
-							: generateQuadraticBezierPath(simplifiedPoints);
-
-					throttledRerender.throttledFunc();
-				})
-				.onEnd(() => {
-					if (!currentPath.current) {
-						return;
-					}
-
-					// Use full point set for final path, but still apply simplification
-					const finalPoints = simplifyPath(points.current, 1); // Lower tolerance for final path
-
-					// Finalize path and add to stack
-					const finalPath =
-						mode === 'cubic'
-							? generateCubicBezierPath(finalPoints)
-							: generateQuadraticBezierPath(finalPoints);
-
-					pathStack.current = [
-						...pathStack.current,
-						{
-							path: finalPath,
-							color: currentPath.current.color,
-							strokeWidth: currentPath.current.strokeWidth,
-						},
-					];
-
-					// Reset current path state
-					currentPath.current = null;
-					points.current = [];
-					lastPoint.current = null;
-
-					onStrokeEnd?.();
-
-					requestAnimationFrame(rerender);
-				}),
-		[
-			touchEnabled,
-			currentPath,
-			toolColor,
-			strokeWeight,
-			onStrokeStart,
-			rerender,
-			mode,
-			generateCubicBezierPath,
-			generateQuadraticBezierPath,
-			throttledRerender,
-			pathStack,
-			onStrokeEnd,
-		],
+		() => Gesture.Race(tapGesture, panGesture),
+		[tapGesture, panGesture],
 	);
 };

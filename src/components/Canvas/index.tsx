@@ -16,7 +16,7 @@ import {
 	GestureDetector,
 	GestureHandlerRootView,
 } from 'react-native-gesture-handler';
-import { useCanvasControls, usePanGesture } from '../../hooks';
+import { useCanvasControls, useGesture } from '../../hooks';
 import { globalStyles } from '../../styles';
 import type { CanvasControls, PathData } from '../../types';
 
@@ -77,7 +77,7 @@ const CanvasComponent = forwardRef<CanvasControls, CanvasComponentProps>(
 
 		useCanvasControls(canvasRef, pathStack, ref, backgroundImage);
 
-		const panGesture = usePanGesture({
+		const gesture = useGesture({
 			currentPath,
 			mode,
 			onStrokeEnd,
@@ -103,7 +103,7 @@ const CanvasComponent = forwardRef<CanvasControls, CanvasComponentProps>(
 			<GestureHandlerRootView
 				onLayout={updateCanvasSize}
 				style={globalStyles.flex}>
-				<GestureDetector gesture={panGesture}>
+				<GestureDetector gesture={gesture}>
 					<Canvas
 						ref={canvasRef}
 						style={{
